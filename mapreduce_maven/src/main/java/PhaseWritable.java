@@ -76,7 +76,6 @@ public class PhaseWritable implements Writable{
         this.ndays = ndays;
     }
 
-    @Override
     public void write(DataOutput out) throws IOException {
         out.writeLong(duration);
         out.writeUTF(patterns);
@@ -87,7 +86,6 @@ public class PhaseWritable implements Writable{
         out.writeInt(ndays);
     }
 
-    @Override
     public void readFields(DataInput in) throws IOException {
         duration = in.readLong();
         patterns = in.readUTF();
@@ -97,5 +95,6 @@ public class PhaseWritable implements Writable{
         days = in.readUTF();
         ndays = in.readInt();
     }
+
 
 }
