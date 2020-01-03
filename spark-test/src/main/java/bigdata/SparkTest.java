@@ -1,7 +1,8 @@
 package bigdata;
 
+import java.util.ArrayList;
 import java.util.List;
-
+import java.lang.Long;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaDoubleRDD;
@@ -12,11 +13,12 @@ import org.apache.spark.api.java.function.Function;
 import org.apache.spark.util.StatCounter;
 import org.apache.spark.storage.StorageLevel;
 
-import scala.Tuple2;
+import scala.*;
+
 
 public class SparkTest {
 	
-	private static String inputPath = "/user/nsentout/output/part-m-00493";
+	private static String inputPath = "/user/wberrari/output/part-m-00493";
 
 	public static void main(String[] args)
 	{	
@@ -31,11 +33,18 @@ public class SparkTest {
 		JavaRDD<Long> nonIdlePhases = phasesRdd.filter(f ->
 		!f.getPatterns().equals("-1")).map(f -> f.getDuration());
 
+		//StringBuilder stringBuilder = new StringBuilder();
+		StatCounter statistics = nonIdlePhases.mapToDouble(f -> f).stats();
+		ArrayList<String> output = new ArrayList<String>();
+		output.add("min :"+statistics.min());
+		output.add("max :"+statistics.max());
+		output.add("avg :"+statistics.mean());
+		output.add("total :"+statistics.sum());
+		context.parallelize(output).saveAsTextFile("hdfs://froment:9000/nonidleResults");
+		
+		
 		context.close();
          
-         //appendToOutput("NON IDLE PHASES");
-         //calculateStats(conf, nonIdlePhases);
-         //writeToFile(context, args[1] + "nonidle");
 	}
 	
 }
