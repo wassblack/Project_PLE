@@ -1,4 +1,3 @@
-package bigdata;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +28,7 @@ public class SparkTest {
 		
 		//String inputPath = "hdfs://froment:9000" + args[0];
 	
-		JavaRDD<InputWritable> phasesRdd = context.sequenceFile(inputPath, NullWritable.class, InputWritable.class)
+		JavaRDD<PhaseWritable> phasesRdd = context.sequenceFile(inputPath, NullWritable.class, PhaseWritable.class)
 				.values().persist(StorageLevel.MEMORY_AND_DISK());
 
 		JavaRDD<Long> nonIdlePhases = phasesRdd.filter(f ->
@@ -42,7 +41,7 @@ public class SparkTest {
 		output.add("max :"+statistics.max());
 		output.add("avg :"+statistics.mean());
 		output.add("total :"+statistics.sum());
-		context.parallelize(output).saveAsTextFile("hdfs://froment:9000/nonidleResults");
+		context.parallelize(output).saveAsTextFile("hdfs://froment:9000/user/mcherifi/wassim");
 		
 		
 		

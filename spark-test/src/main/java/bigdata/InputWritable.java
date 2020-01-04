@@ -8,10 +8,14 @@ import java.io.Serializable;
 
 import org.apache.hadoop.io.Writable;
 
-public class PhaseWritable implements Writable{
+public class InputWritable implements Writable,Serializable{
 
 
-    private Long duration;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 3632978670285044621L;
+	private Long duration;
     private String patterns;
     private int npatterns;
     private String jobs;
@@ -19,7 +23,7 @@ public class PhaseWritable implements Writable{
     private String days;
     private int ndays;
 
-    public PhaseWritable() { }
+    public InputWritable() { }
 
     public Long getDuration() {
         return duration;
