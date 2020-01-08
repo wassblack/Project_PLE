@@ -25,15 +25,31 @@ public class SparkTest {
 	{	
 		SparkConf conf = new SparkConf().setAppName("Projet PLE");
 		JavaSparkContext context = new JavaSparkContext(conf);
+		
+		ArrayList<String> output = new ArrayList<String>();
 
 		JavaRDD<PhaseWritable> phasesRdd = context.sequenceFile(inputPath, NullWritable.class, PhaseWritable.class)
 				.values().persist(StorageLevel.MEMORY_AND_DISK());
 
 		JavaRDD<Long> nonIdlePhases = phasesRdd.filter(f -> !f.getPatterns().equals("-1"))
-					.map(f -> f.getDuration());
-		
-		ArrayList<String> output = new ArrayList<String>();
+					.map(f -> f.getDuration());	
+		output.add("===== DISTRIB PHASES NON IDLE =====");
 		SparkTest.computeStats(nonIdlePhases, output);
+		
+		JavaRDD<Long> idlePhases = phasesRdd.filter(f -> f.getPatterns().equals("-1"))
+				.map(f -> f.getDuration());
+		output.add("===== DISTRIB PHASES IDLE =====");
+		SparkTest.computeStats(idlePhases, output);
+		
+		JavaRDD<Long> npatterns = phasesRdd.filter(f -> !f.getPatterns().equals("-1"))
+				.map(f -> (long)f.getNpatterns());
+		output.add("===== DISTRIB NPATTERNS NON IDLE =====");
+		SparkTest.computeStats(npatterns, output);
+		
+		JavaRDD<Long> njobs = phasesRdd.filter(f -> !f.getPatterns().equals("-1"))
+				.map(f -> (long)f.getNjobs());
+		output.add("===== DISTRIB NJOBS NON IDLE =====");
+		SparkTest.computeStats(njobs, output);
 		
 		context.parallelize(output).saveAsTextFile("hdfs://froment:9000/user/nsentout/output-project");
 	}
@@ -49,22 +65,23 @@ public class SparkTest {
 		output.add("total :"+statistics.sum());
 		
 		// Récupère la médiane
-		JavaPairRDD<Long, Long> rdd_npatterns_index = rdd.sortBy(f -> f, true, rdd.getNumPartitions())
+		JavaPairRDD<Long, Long> rddPair = rdd.sortBy(f -> f, true, rdd.getNumPartitions())
 					.zipWithIndex().mapToPair(f -> new Tuple2<>(f._2, f._1));
 		
-		long count = rdd_npatterns_index.count();
+		long count = rddPair.count();
 		
 		long median = 0;
-		if (count % 2 == 0) {
-			long left = ((long) count / 2) - 1;
-			long right = left + 1;
-			median = (rdd_npatterns_index.lookup(left).get(0) + rdd_npatterns_index.lookup(right).get(0)) / 2;
+		if (count > 0) {
+			if (count % 2 == 0) {
+				long left = ((long) count / 2) - 1;
+				long right = left + 1;
+				median = (rddPair.lookup(left).get(0) + rddPair.lookup(right).get(0)) / 2;
+			}
+			else {
+				median = rddPair.lookup(count / 2).get(0);
+			}
+			output.add("median :"+median);
 		}
-		else {
-			median = rdd_npatterns_index.lookup(count / 2).get(0);
-		}
-		
-		output.add("median :"+median);
 		
 		output.add("Histogramme : ");
 		Tuple2<double[], long[]> histogram = rddDouble.histogram(10);
