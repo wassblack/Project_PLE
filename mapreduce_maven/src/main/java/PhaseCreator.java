@@ -39,7 +39,7 @@ public class PhaseCreator {
 
   public static void main(String[] args) throws Exception {
     Configuration conf = new Configuration();
-    Job job = Job.getInstance(conf, "IdleFilter");
+    Job job = Job.getInstance(conf, "Creator");
     job.setNumReduceTasks(0);
     job.setJarByClass(PhaseCreator.class);
     job.setMapperClass(PhaseCreatorMapper.class);
