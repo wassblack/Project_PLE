@@ -16,11 +16,8 @@ public class PhaseWritable implements Writable, Serializable{
 	private static final long serialVersionUID = 1L;
 	private Long duration;
     private String patterns;
-    //private int npatterns;
     private String jobs;
-    //private int njobs;
     private String days;
-    //private int ndays;
 
     public PhaseWritable() { }
 
@@ -33,7 +30,6 @@ public class PhaseWritable implements Writable, Serializable{
     }
 
     public int getNpatterns() {
-        //return npatterns;
     	if (patterns.equals("-1")) {
     		return 0;
     	}
@@ -47,7 +43,6 @@ public class PhaseWritable implements Writable, Serializable{
     }
 
     public int getNjobs() {
-        //return njobs;
     	if (jobs.equals("-1")) {
     		return 0;
     	}
@@ -61,7 +56,6 @@ public class PhaseWritable implements Writable, Serializable{
     }
 
     public int getNdays() {
-        //return ndays;
     	if (days.equals("-1")) {
     		return 0;
     	}
@@ -77,45 +71,27 @@ public class PhaseWritable implements Writable, Serializable{
     public void setPatterns(String patterns) {
         this.patterns = patterns;
     }
-/*
-    public void setNpatterns(int npatterns) {
-        this.npatterns = npatterns;
-    }
-*/
+
     public void setJobs(String jobs) {
         this.jobs = jobs;
     }
-/*
-    public void setNjobs(int njobs) {
-        this.njobs = njobs;
-    }
-*/
+
     public void setDays(String days) {
         this.days = days;
     }
-/*
-    public void setNdays(int ndays) {
-        this.ndays = ndays;
-    }
-*/
+
     public void write(DataOutput out) throws IOException {
         out.writeLong(duration);
         out.writeUTF(patterns);
-        //out.writeInt(npatterns);
         out.writeUTF(jobs);
-        //out.writeInt(njobs);
         out.writeUTF(days);
-        //out.writeInt(ndays);
     }
 
     public void readFields(DataInput in) throws IOException {
         duration = in.readLong();
         patterns = in.readUTF();
-        //npatterns = in.readInt();
         jobs = in.readUTF();
-        //njobs = in.readInt();
         days = in.readUTF();
-        //ndays = in.readInt();
     }
 
 

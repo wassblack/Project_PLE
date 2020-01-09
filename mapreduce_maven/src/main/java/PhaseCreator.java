@@ -21,11 +21,8 @@ public class PhaseCreator {
         try{
           outValue.setDuration(Long.parseLong(phase[2]));
           outValue.setPatterns(phase[3]);
-          //outValue.setNpatterns(Integer.parseInt(phase[4]));
           outValue.setJobs(phase[5]);
-          //outValue.setNjobs(Integer.parseInt(phase[6]));
           outValue.setDays(phase[7]);
-          //outValue.setNdays(Integer.parseInt(phase[8]));
         }catch (Exception e) {
           return;
         }
