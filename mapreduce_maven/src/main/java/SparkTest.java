@@ -36,20 +36,23 @@ public class SparkTest {
 
 		JavaRDD<PhaseWritable> phasesRdd = context.sequenceFile(inputPath, NullWritable.class, PhaseWritable.class)
 				.values().persist(StorageLevel.MEMORY_AND_DISK());
-		/*
+		
 		// Question 1 a
+		/*
 		JavaRDD<Long> durationNonIdle = phasesRdd.filter(f -> !f.getPatterns().equals("-1"))
 					.map(f -> f.getDuration());	
 		output.add("===== DISTRIB DURATION NON IDLE =====");
 		SparkTest.computeStats(durationNonIdle, output);
 		*/
-		/*
+		
 		// Question 1 b
+		/*
 		JavaRDD<Long> durationIdle = phasesRdd.filter(f -> f.getPatterns().equals("-1"))
 				.map(f -> f.getDuration());
 		output.add("===== DISTRIB DURATION IDLE =====");
 		SparkTest.computeStats(durationIdle, output);
 		*/
+		
 		// Question 1 c
 		/*
 		for (int i = 0; i < NUMBER_PHASES; i++) {
@@ -60,6 +63,7 @@ public class SparkTest {
 			SparkTest.computeStats(phases, output);
 		}
 		*/
+		
 		/*
 		// Question 2
 		JavaRDD<Long> npatterns = phasesRdd.filter(f -> !f.getPatterns().equals("-1"))
@@ -67,6 +71,7 @@ public class SparkTest {
 		output.add("===== DISTRIB NPATTERNS NON IDLE =====");
 		SparkTest.computeStats(npatterns, output);
 		*/
+		
 		/*
 		// Question 3
 		JavaRDD<Long> njobs = phasesRdd.filter(f -> !f.getPatterns().equals("-1"))
@@ -74,6 +79,7 @@ public class SparkTest {
 		output.add("===== DISTRIB NJOBS NON IDLE =====");
 		SparkTest.computeStats(njobs, output);
 		*/
+		
 		// Question 5
 		/*
 		JavaRDD<Long> totalIdleTime = phasesRdd.filter(f -> f.getPatterns().equals("-1"))
@@ -81,38 +87,40 @@ public class SparkTest {
 		output.add("===== TOTAL IDLE TIME =====");
 		SparkTest.computeTotalDurationTime(totalIdleTime, output);
 		*/
+		
 		// Question 6
-		TreeMap<Double, String> allDurations = new TreeMap<Double, String>();
+		
+		TreeMap<Double, String> allDurations = new TreeMap<Double, String>(Collections.reverseOrder());
 		double totalDuration = 0.0;
 				
 		for (int i = 0; i < NUMBER_PHASES; i++) {
 			final int k = i;
 			JavaRDD<Long> phaseAlone = phasesRdd.filter(f -> f.getPatterns().equals(String.valueOf(k)))
 					.map(f -> f.getDuration());
+			output.add("DURATION PHASE " + k + " ALONE");
 			double duration = SparkTest.computeTotalDurationTime(phaseAlone, output);
-			allDurations.put(duration, String.valueOf(i));
-			totalDuration += duration;
+			if (duration != -1.0) {
+				allDurations.put(duration, String.valueOf(i));
+				totalDuration += duration;
+			}
 		}
 		
 		output.add("TOTAL DURATION " + totalDuration);
 
-		int cpt = 0;
 		for (Map.Entry<Double, String> value : allDurations.entrySet()) {
 			output.add("PERCENTAGE PHASE " + value.getValue() + " ALONE");
 			double percentage = value.getKey() / totalDuration * 100;
 			output.add(String.valueOf(percentage));
-			cpt++;
 		}
 		
 		output.add("TOP TEN PATTERNS");
-		NavigableMap<Double, String> descendingAllDurations = allDurations.descendingMap();
-		
-		cpt = 0;
-		for (Map.Entry<Double, String> value : descendingAllDurations.entrySet()) {
+		int cpt = 0;
+		for (Map.Entry<Double, String> value : allDurations.entrySet()) {
 			cpt++;
-			output.add(cpt + " : " + descendingAllDurations.get(value.getKey()));
+			output.add(cpt + " : " + allDurations.get(value.getKey()));
 			if (cpt == 9)	break;
 		}
+		
 
 		context.parallelize(output).repartition(1).saveAsTextFile("hdfs://froment:9000/user/nsentout/output-project");
 	}
@@ -124,14 +132,14 @@ public class SparkTest {
 		
 		if (count > 0) {
 			StatCounter statistics = rddDouble.stats();
-			double hours = statistics.sum() / 1000 / 3600;
-			output.add("Time (in hours): " + hours);
+			double hours = statistics.sum() / 1000.0 / 3600.0;
+			output.add("Duration (in hours) : " + hours);
 			return hours;
 		}
 		else {
 			output.add("The RDD was empty");
 		}
-		return 0.0;
+		return -1.0;
 	}
 	
 	private static void computeStats(JavaRDD<Long> rdd, ArrayList<String> output)
@@ -172,34 +180,35 @@ public class SparkTest {
 			
 			//JavaPairRDD<Long, Long> rddPair = rdd.zipWithIndex().mapToPair(f -> new Tuple2<>(f._2, f._1)).sortByKey();
 			
-			
-			
 			long median = 0;
-			//long firstQuartile = 0;
-			//long thirdQuartile = 0;
+			long firstQuartile = 0;
+			long thirdQuartile = 0;
 			
 			if (count % 2 == 0) {
 				long middle_left = count / 2 - 1;
 				long middle_right = middle_left + 1;
 				median = (rddPair.lookup(middle_left).get(0) + rddPair.lookup(middle_right).get(0)) / 2;
+				output.add("median : " + median);
 				
 				long first_quarter_left = count / 4 - 1;
 				long first_quarter_right = first_quarter_left + 1;
-				//firstQuartile = (rddPair.lookup(first_quarter_left).get(0) + rddPair.lookup(first_quarter_right).get(0)) / 2;
+				firstQuartile = (rddPair.lookup(first_quarter_left).get(0) + rddPair.lookup(first_quarter_right).get(0)) / 2;
+				output.add("premier quartile : " + firstQuartile);
 				
 				long third_quarter_left = 3 * (count / 4) - 1;
 				long third_quarter_right = third_quarter_left + 1;
-				//thirdQuartile = (rddPair.lookup(third_quarter_left).get(0) + rddPair.lookup(third_quarter_right).get(0)) / 2;
+				thirdQuartile = (rddPair.lookup(third_quarter_left).get(0) + rddPair.lookup(third_quarter_right).get(0)) / 2;
+				output.add("troisieme quartile : " + thirdQuartile);
 			}
 			else {
 				median = rddPair.lookup(count / 2).get(0);
-				//firstQuartile = rddPair.lookup(count / 4).get(0);
-				//thirdQuartile = rddPair.lookup(3 * count / 4).get(0);
+				output.add("median : " + median);
+				firstQuartile = rddPair.lookup(count / 4).get(0);
+				output.add("premier quartile : " + firstQuartile);
+				thirdQuartile = rddPair.lookup(3 * count / 4).get(0);
+				output.add("troisieme quartile : " + thirdQuartile);
 				
-			}
-			output.add("median : " + median);
-			//output.add("premier quartile : " + firstQuartile);
-			//output.add("troisieme quartile : " + thirdQuartile);
+			}	
 		}
 		else {
 			output.add("The RDD was empty");
