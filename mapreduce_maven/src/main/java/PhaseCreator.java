@@ -4,7 +4,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -22,11 +21,11 @@ public class PhaseCreator {
         try{
           outValue.setDuration(Long.parseLong(phase[2]));
           outValue.setPatterns(phase[3]);
-          outValue.setNpatterns(Integer.parseInt(phase[4]));
+          //outValue.setNpatterns(Integer.parseInt(phase[4]));
           outValue.setJobs(phase[5]);
-          outValue.setNjobs(Integer.parseInt(phase[6]));
+          //outValue.setNjobs(Integer.parseInt(phase[6]));
           outValue.setDays(phase[7]);
-          outValue.setNdays(Integer.parseInt(phase[8]));
+          //outValue.setNdays(Integer.parseInt(phase[8]));
         }catch (Exception e) {
           return;
         }
