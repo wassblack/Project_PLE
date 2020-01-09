@@ -1,5 +1,12 @@
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 import java.lang.Long;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.spark.SparkConf;
@@ -15,8 +22,10 @@ import scala.Tuple2;
 
 public class SparkTest {
 	
-	private static String inputPath = "/user/nsentout/PhasesSequenceFile/part-m-001*";
+	private static String inputPath = "/user/nsentout/PhasesSequenceFile/part-m-002*";
 	//private static String inputPath = "/user/nsentout/PhasesSequenceFile/*";
+	
+	private static Integer NUMBER_PHASES = 22;
 
 	public static void main(String[] args)
 	{	
@@ -43,7 +52,7 @@ public class SparkTest {
 		*/
 		// Question 1 c
 		/*
-		for (int i = 0; i < 22; i++) {
+		for (int i = 0; i < NUMBER_PHASES; i++) {
 			final int k = i;
 			JavaRDD<Long> phases = phasesRdd.filter(f -> f.getPatterns().equals(String.valueOf(k)))
 					.map(f -> f.getDuration());
@@ -73,23 +82,56 @@ public class SparkTest {
 		SparkTest.computeTotalDurationTime(totalIdleTime, output);
 		*/
 		// Question 6
+		TreeMap<Double, String> allDurations = new TreeMap<Double, String>();
+		double totalDuration = 0.0;
+				
+		for (int i = 0; i < NUMBER_PHASES; i++) {
+			final int k = i;
+			JavaRDD<Long> phaseAlone = phasesRdd.filter(f -> f.getPatterns().equals(String.valueOf(k)))
+					.map(f -> f.getDuration());
+			double duration = SparkTest.computeTotalDurationTime(phaseAlone, output);
+			allDurations.put(duration, String.valueOf(i));
+			totalDuration += duration;
+		}
 		
+		output.add("TOTAL DURATION " + totalDuration);
+
+		int cpt = 0;
+		for (Map.Entry<Double, String> value : allDurations.entrySet()) {
+			output.add("PERCENTAGE PHASE " + value.getValue() + " ALONE");
+			double percentage = value.getKey() / totalDuration * 100;
+			output.add(String.valueOf(percentage));
+			cpt++;
+		}
 		
+		output.add("TOP TEN PATTERNS");
+		NavigableMap<Double, String> descendingAllDurations = allDurations.descendingMap();
+		
+		cpt = 0;
+		for (Map.Entry<Double, String> value : descendingAllDurations.entrySet()) {
+			cpt++;
+			output.add(cpt + " : " + descendingAllDurations.get(value.getKey()));
+			if (cpt == 9)	break;
+		}
+
 		context.parallelize(output).repartition(1).saveAsTextFile("hdfs://froment:9000/user/nsentout/output-project");
 	}
 	
-	private static void computeTotalDurationTime(JavaRDD<Long> rdd, ArrayList<String> output)
+	private static double computeTotalDurationTime(JavaRDD<Long> rdd, ArrayList<String> output)
 	{
 		JavaDoubleRDD rddDouble = rdd.mapToDouble(f -> f);
 		long count = rddDouble.count();
 		
 		if (count > 0) {
 			StatCounter statistics = rddDouble.stats();
-			output.add("Time (in hours): " + statistics.sum() / 1000 / 3600);
+			double hours = statistics.sum() / 1000 / 3600;
+			output.add("Time (in hours): " + hours);
+			return hours;
 		}
 		else {
 			output.add("The RDD was empty");
 		}
+		return 0.0;
 	}
 	
 	private static void computeStats(JavaRDD<Long> rdd, ArrayList<String> output)
