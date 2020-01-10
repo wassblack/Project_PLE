@@ -1,0 +1,23 @@
+id;name
+0;posix read unique file
+1;posix write consecutive unique file
+2;posix read shared file
+3;posix write sequential unique file
+4;posix write unique file
+5;posix read consecutive unique file
+6;posix read sequential unique file
+7;mpi-io read independent shared file
+8;mpi-io write shared file
+9;mpi-io write unique file
+10;mpi-io read collective unique file
+11;posix write consecutive shared file
+12;posix write sequential shared file
+13;mpi-io read collective shared file
+14;posix read consecutive shared file
+15;posix write shared file
+16;mpi-io write collective unique file
+17;mpi-io write independent shared file
+18;posix read sequential shared file
+19;mpi-io read independent unique file
+20;mpi-io write independent unique file
+21;mpi-io write collective shared file
