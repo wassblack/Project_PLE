@@ -7,13 +7,13 @@ import java.io.Serializable;
 
 import org.apache.hadoop.io.Writable;
 
-public class PhaseWritable implements Writable, Serializable{
-
-
+public class PhaseWritable implements Writable, Serializable
+{
     /**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
 	private Long duration;
     private String patterns;
     private String jobs;
@@ -24,12 +24,24 @@ public class PhaseWritable implements Writable, Serializable{
     public Long getDuration() {
         return duration;
     }
+    
+    public boolean patternIsPresent(String pattern) {
+    	boolean isPresent = false;
+    	
+    	for (String p : patterns.split(",")) {
+    		if (p.equals(pattern)) {
+    			isPresent = true;
+    			break;
+    		}
+    	}
+    	return isPresent;
+    }
 
     public String getPatterns() {
         return patterns;
     }
 
-    public int getNpatterns() {
+    public long getNpatterns() {
     	if (patterns.equals("-1")) {
     		return 0;
     	}
@@ -42,7 +54,7 @@ public class PhaseWritable implements Writable, Serializable{
         return jobs;
     }
 
-    public int getNjobs() {
+    public long getNjobs() {
     	if (jobs.equals("-1")) {
     		return 0;
     	}
@@ -55,7 +67,7 @@ public class PhaseWritable implements Writable, Serializable{
         return days;
     }
 
-    public int getNdays() {
+    public long getNdays() {
     	if (days.equals("-1")) {
     		return 0;
     	}
@@ -93,6 +105,5 @@ public class PhaseWritable implements Writable, Serializable{
         jobs = in.readUTF();
         days = in.readUTF();
     }
-
 
 }
