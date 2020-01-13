@@ -35,7 +35,7 @@ public class Questions
 		JavaRDD<Long> durationIdle = phasesRdd.filter(phase -> phase.getPatterns().equals("-1"))
 				.map(phase -> phase.getDuration());
 		output.add("===== DISTRIB DURATION IDLE =====");
-		Questions.computeStats(durationIdle, output);
+		Questions.computeStats(durationIdle, output).fillOutput(output);
 	}
 	
 	/**********************************************************************************************/
@@ -150,7 +150,7 @@ public class Questions
 	
 	public static void question7(JavaRDD<PhaseWritable> phasesRdd, ArrayList<String> output)
 	{
-		
+		//TODO
 	}
 	
 	/**********************************************************************************************/
@@ -159,21 +159,28 @@ public class Questions
 	private static Distribution computeStats(JavaRDD<Long> rdd, ArrayList<String> output)
 	{
 		JavaDoubleRDD rddDouble = rdd.mapToDouble(f -> f);
+		if (rddDouble == null) {
+			System.out.println("AAAAAAAAAAAA NULL AAAAAAAAAAAAA");
+			return null;
+		}
+		else {
+			System.out.println("AAAAAAAAAAAA PAS NULL AAAAAAAAAAAAA");
+		}
 		long count = rddDouble.count();
 		
 		if (count > 0) {
 			Distribution distribution = new Distribution();
-			/*StatCounter statistics = rddDouble.stats();
+			StatCounter statistics = rddDouble.stats();
 			
 			distribution.setMin(statistics.min());
 			distribution.setMax(statistics.max());
-			distribution.setAvg(statistics.mean());*/
+			distribution.setAvg(statistics.mean());
 		
 			// Histogramme
 			distribution.setHistogram(rddDouble.histogram(10));
 			
 			// Récupère la médiane et les quartiles
-			/*JavaPairRDD<Long, Long> rddPair = rdd.sortBy(f -> f, true, rdd.getNumPartitions())
+			JavaPairRDD<Long, Long> rddPair = rdd.sortBy(f -> f, true, rdd.getNumPartitions())
 						.zipWithIndex().mapToPair(f -> new Tuple2<>(f._2, f._1));
 			
 			//JavaPairRDD<Long, Long> rddPair = rdd.zipWithIndex().mapToPair(f -> new Tuple2<>(f._2, f._1)).sortByKey();
@@ -203,7 +210,7 @@ public class Questions
 			
 			distribution.setMedian(median);
 			distribution.setFirstQuartile(firstQuartile);
-			distribution.setThirdQuartile(thirdQuartile);*/
+			distribution.setThirdQuartile(thirdQuartile);
 			
 			return distribution;
 		}

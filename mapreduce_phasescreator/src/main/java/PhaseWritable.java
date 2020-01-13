@@ -14,16 +14,13 @@ public class PhaseWritable implements Writable, Serializable
 	 */
 	private static final long serialVersionUID = 1L;
 	
+	private Long start;
 	private Long duration;
     private String patterns;
     private String jobs;
     private String days;
 
     public PhaseWritable() { }
-
-    public Long getDuration() {
-        return duration;
-    }
     
     public boolean patternIsPresent(String pattern) {
     	boolean isPresent = false;
@@ -35,6 +32,18 @@ public class PhaseWritable implements Writable, Serializable
     		}
     	}
     	return isPresent;
+    }
+    
+    public Long getStart() {
+    	return start;
+    }
+    
+    public Long getEnd() {
+    	return start + duration;
+    }
+
+    public Long getDuration() {
+        return duration;
     }
 
     public String getPatterns() {
@@ -75,6 +84,10 @@ public class PhaseWritable implements Writable, Serializable
     		return days.split(",").length;
     	}
     }
+    
+    public void setStart(Long start) {
+    	this.start = start;
+    }
 
     public void setDuration(Long duration) {
         this.duration = duration;
@@ -93,6 +106,7 @@ public class PhaseWritable implements Writable, Serializable
     }
 
     public void write(DataOutput out) throws IOException {
+    	out.writeLong(start);
         out.writeLong(duration);
         out.writeUTF(patterns);
         out.writeUTF(jobs);
@@ -100,6 +114,7 @@ public class PhaseWritable implements Writable, Serializable
     }
 
     public void readFields(DataInput in) throws IOException {
+    	start = in.readLong();
         duration = in.readLong();
         patterns = in.readUTF();
         jobs = in.readUTF();

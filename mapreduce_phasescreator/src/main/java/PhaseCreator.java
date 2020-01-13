@@ -24,6 +24,7 @@ public class PhaseCreator {
 			
 			if (phase.length == 9) {
 				try {
+					outValue.setStart(Long.parseLong(phase[0]));
 					outValue.setDuration(Long.parseLong(phase[2]));
 					outValue.setPatterns(phase[3]);
 					outValue.setJobs(phase[5]);
@@ -42,7 +43,9 @@ public class PhaseCreator {
 	{
 		Configuration conf = new Configuration();
 		
-		Job job = Job.getInstance(conf, "Creator");
+		conf.set("mapreduce.map.memory.mb", "4096");
+		
+		Job job = Job.getInstance(conf, "PhaseCreator");
 		job.setNumReduceTasks(0);
 		job.setJarByClass(PhaseCreator.class);
 		

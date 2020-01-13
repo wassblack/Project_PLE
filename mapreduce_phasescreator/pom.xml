@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>bigdata</groupId>
-  <artifactId>PLE--Project</artifactId>
+  <artifactId>mapreduce-phasecreator</artifactId>
   <version>0.0.1</version>
-  <name>Project</name>
+  <name>PLE Project - MapReduce PhaseCreator</name>
   <dependencies>
   	<dependency>
   		<groupId>org.apache.hadoop</groupId>
@@ -15,16 +15,6 @@
   		<artifactId>hadoop-mapreduce-client-core</artifactId>
   		<version>2.7.3</version>
   	</dependency>
-  	<dependency>
-			<groupId>org.apache.spark</groupId>
-			<artifactId>spark-core_2.10</artifactId>
-			<version>2.0.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.scala-lang</groupId>
-			<artifactId>scala-library</artifactId>
-			<version>2.11.1</version>
-		</dependency>
   </dependencies>
   <build>
   	<plugins>
@@ -35,7 +25,7 @@
   			<configuration>
   				<archive>
   					<manifest>
-  						<mainClass>MainPLEProject</mainClass>
+  						<mainClass>PhaseCreator</mainClass>
   					</manifest>
   				</archive>
   			</configuration>

@@ -9,8 +9,8 @@ import org.apache.spark.storage.StorageLevel;
 
 public class MainPLEProject
 {
-	//private static String phasesInputPath = "/user/nsentout/PhasesSequenceFile/part-m-0020*";
-	private static String phasesInputPath = "/user/nsentout/PhasesSequenceFile/*";
+	private static String phasesInputPath = "/user/nsentout/PhaseSequenceFiles/part-m-00001";
+	//private static String phasesInputPath = "/user/nsentout/PhaseSequenceFiles/*";
 
 	public static void main(String[] args)
 	{	
@@ -21,7 +21,7 @@ public class MainPLEProject
 			ArrayList<String> output = new ArrayList<String>();
 
 			JavaRDD<PhaseWritable> phasesRdd = context.sequenceFile(phasesInputPath, NullWritable.class, PhaseWritable.class)
-					.values().persist(StorageLevel.MEMORY_AND_DISK());
+					.values();//.persist(StorageLevel.MEMORY_AND_DISK());
 			
 			switch (args[0]) {
 				case "q1a":
@@ -65,9 +65,6 @@ public class MainPLEProject
 					+ "q1a, q1b, q1c, q2, q3, q4, q5, q6, q7");
 			System.exit(-2);
 		}
-
-		
 	}
 	
 }
-
