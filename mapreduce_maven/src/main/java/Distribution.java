@@ -17,13 +17,13 @@ public class Distribution
 	public Distribution() {}
 	
 	public void fillOutput(List<String> output) {
-		output.add("Min : " + min);
+		/*output.add("Min : " + min);
 		output.add("Max : " + max);
 		output.add("Avg : " + avg);
 		output.add("Median : " + median);
 		output.add("First quartile : " + firstQuartile);
-		output.add("Third quartile : " + thirdQuartile);
-		/*
+		output.add("Third quartile : " + thirdQuartile);*/
+		
 		for (int i = 0; i < histogram._1.length - 1; i++) {
 			StringBuilder histogramString = new StringBuilder();
 
@@ -38,7 +38,7 @@ public class Distribution
 
 			output.add(histogramString.toString());
 		}
-		*/
+		
 	}
 
 	public double getMin() {
