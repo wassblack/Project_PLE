@@ -14,7 +14,6 @@ import scala.Tuple2;
 public class Questions 
 {
 	private static Integer NUMBER_PATTERNS = 22;
-	private static Integer NUMBER_JOBS = 85421;
 	
 	private static String patternsInputPath = "/raw_data/ALCF_repo/patterns.csv";
 	
@@ -22,7 +21,7 @@ public class Questions
 	
 	public static void question1a(JavaRDD<PhaseWritable> phasesRdd, ArrayList<String> output)
 	{
-		JavaRDD<Long> durationNonIdle = phasesRdd.filter(phase -> !phase.getPatterns().equals("-1"))
+		JavaRDD<Long> durationNonIdle = phasesRdd.filter(phase -> !phase.isIdle())
 				.map(phase -> phase.getDuration());	
 		output.add("===== DISTRIB DURATION NON IDLE =====");
 		Questions.computeStats(durationNonIdle, output).fillOutput(output);
@@ -32,7 +31,7 @@ public class Questions
 	
 	public static void question1b(JavaRDD<PhaseWritable> phasesRdd, ArrayList<String> output)
 	{
-		JavaRDD<Long> durationIdle = phasesRdd.filter(phase -> phase.getPatterns().equals("-1"))
+		JavaRDD<Long> durationIdle = phasesRdd.filter(phase -> phase.isIdle())
 				.map(phase -> phase.getDuration());
 		output.add("===== DISTRIB DURATION IDLE =====");
 		Questions.computeStats(durationIdle, output).fillOutput(output);
@@ -58,7 +57,7 @@ public class Questions
 	
 	public static void question2(JavaRDD<PhaseWritable> phasesRdd, ArrayList<String> output)
 	{
-		JavaRDD<Long> npatterns = phasesRdd.filter(phase -> !phase.getPatterns().equals("-1"))
+		JavaRDD<Long> npatterns = phasesRdd.filter(phase -> !phase.isIdle())
 				.map(phase -> phase.getNpatterns());
 		output.add("===== DISTRIB NPATTERNS NON IDLE =====");
 		Questions.computeStats(npatterns, output).fillOutput(output);
@@ -68,7 +67,7 @@ public class Questions
 	
 	public static void question3(JavaRDD<PhaseWritable> phasesRdd, ArrayList<String> output)
 	{
-		JavaRDD<Long> njobs = phasesRdd.filter(phase -> !phase.getPatterns().equals("-1"))
+		JavaRDD<Long> njobs = phasesRdd.filter(phase -> !phase.isIdle())
 				.map(phase -> phase.getNjobs());
 		output.add("===== DISTRIB NJOBS NON IDLE =====");
 		Questions.computeStats(njobs, output).fillOutput(output);
@@ -85,7 +84,7 @@ public class Questions
 	
 	public static void question5(JavaRDD<PhaseWritable> phasesRdd, ArrayList<String> output)
 	{
-		JavaRDD<Long> totalIdleTime = phasesRdd.filter(phase -> phase.getPatterns().equals("-1"))
+		JavaRDD<Long> totalIdleTime = phasesRdd.filter(phase -> phase.isIdle())
 				.map(phase -> phase.getDuration());
 		output.add("===== TOTAL IDLE TIME =====");
 		Questions.computeTotalDurationTime(totalIdleTime, output);
@@ -159,13 +158,6 @@ public class Questions
 	private static Distribution computeStats(JavaRDD<Long> rdd, ArrayList<String> output)
 	{
 		JavaDoubleRDD rddDouble = rdd.mapToDouble(f -> f);
-		if (rddDouble == null) {
-			System.out.println("AAAAAAAAAAAA NULL AAAAAAAAAAAAA");
-			return null;
-		}
-		else {
-			System.out.println("AAAAAAAAAAAA PAS NULL AAAAAAAAAAAAA");
-		}
 		long count = rddDouble.count();
 		
 		if (count > 0) {

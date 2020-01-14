@@ -34,6 +34,10 @@ public class PhaseWritable implements Writable, Serializable
     	return isPresent;
     }
     
+    public boolean isIdle() {
+    	return patterns.equals("-1");
+    }
+    
     public Long getStart() {
     	return start;
     }

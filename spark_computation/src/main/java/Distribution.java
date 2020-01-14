@@ -24,6 +24,11 @@ public class Distribution
 		output.add("First quartile : " + firstQuartile);
 		output.add("Third quartile : " + thirdQuartile);
 		
+		long total = 0;
+		for (int i = 0; i < histogram._2.length; i++) {
+			total += histogram._2[i];
+		}
+		
 		for (int i = 0; i < histogram._1.length - 1; i++) {
 			StringBuilder histogramString = new StringBuilder();
 
@@ -35,6 +40,8 @@ public class Distribution
 				histogramString.append(") : ");
 			}
 			histogramString.append(histogram._2[i]);
+			double percentage = histogram._2[i] / (double) total * 100;
+			histogramString.append(" (" + percentage + "%)");
 
 			output.add(histogramString.toString());
 		}

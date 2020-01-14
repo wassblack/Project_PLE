@@ -43,7 +43,7 @@ public class PhaseCreator {
 	{
 		Configuration conf = new Configuration();
 		
-		conf.set("mapreduce.map.memory.mb", "4096");
+		conf.set("mapreduce.map.memory.mb", "1024");
 		
 		Job job = Job.getInstance(conf, "PhaseCreator");
 		job.setNumReduceTasks(0);
