@@ -1,6 +1,8 @@
 import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.spark.api.java.JavaDoubleRDD;
@@ -77,7 +79,30 @@ public class Questions
 	
 	public static void question4(JavaRDD<PhaseWritable> phasesRdd, ArrayList<String> output)
 	{
-		//TODO
+		// a
+		JavaPairRDD<String, Long> allJobsAndDurations = phasesRdd.flatMapToPair(f-> 
+		{
+			String[] jobs = f.getJobs().split(",");
+			List<Tuple2<String, Long>> jobsWithDuration = new ArrayList<>();
+			for (String j : jobs) {
+				if (!j.equals("-1")) {
+					jobsWithDuration.add(new Tuple2<String, Long>(j, f.getDuration()));							
+				}
+			}
+			return jobsWithDuration.iterator();
+		}).reduceByKey((a,b) -> a+b);
+		
+		Questions.computeStats(allJobsAndDurations.values(), output).fillOutput(output);
+	
+		// b
+		List<Tuple2<String, Long>> topTen = allJobsAndDurations.top(10, 
+				new ComparatorTuple2Serializable());
+		
+		int cpt = 1;
+		for (Tuple2<String, Long> value : topTen) {
+			output.add(cpt + " : " + value._2 + "(" + value._1 + ")");
+			cpt++;
+		}
 	}
 	
 	/**********************************************************************************************/
@@ -133,7 +158,7 @@ public class Questions
 			output.add(String.valueOf(percentage));
 		}
 
-		// Question 6 b
+		// Top ten patterns
 		output.add("TOP TEN PATTERNS");
 		int cpt = 0;
 		for (Map.Entry<Double, Long> value : allDurations.entrySet()) {
@@ -149,7 +174,39 @@ public class Questions
 	
 	public static void question7(JavaRDD<PhaseWritable> phasesRdd, ArrayList<String> output)
 	{
-		//TODO
+		String patterns [] = {"15","11","8","21"};
+
+		output.add("count : " + phasesRdd.count());
+
+		HashMap<Long, String> plagePatterns = new HashMap<Long, String>();
+		for (long i = 0; i < 23; i++) {
+			plagePatterns.put(i, "");
+		}
+
+		JavaRDD<PhaseWritable> patternPhases = phasesRdd.filter(phase-> phase.onePatternIsPresent(patterns));
+		output.add("count filter : " + patternPhases.count());
+
+		/*
+		 patternPhases.foreach(phase -> {
+			 plagePatterns.put(0l, phase.getPatterns());
+		 });
+
+	 	output.add(plagePatterns.get(0l));
+		 */
+
+		JavaPairRDD<Long, String> pair = phasesRdd.mapToPair(phase -> {
+			Long a = phase.getPlagesHoraires().get(0);
+			String b = phase.getPatterns();
+
+			return new Tuple2<Long, String>(a, b);
+		});
+		
+		pair = pair.reduceByKey((a,b) -> (a +","+b));
+		
+		output.add("count reduce : " + patternPhases.count());
+		
+		pair.foreach(f -> System.out.println(f));
+
 	}
 	
 	/**********************************************************************************************/
