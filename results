@@ -502,6 +502,60 @@ PERCENTAGE PATTERN "posix read sequential shared file" ALONE OR WITH OTHERS PATT
 10 : mpi-io read collective shared file
 
 ===== Q7)  =====
+
+Trier phases.csv pour avoir toutes les phases qui continent le pattern 0 au début, le pattern 1 après, etc.
+Ajouter nombre de phases ayant le pattern 0 pour les sauter si il ne nous intéresse pas et lire directement où ca nous
+intéresse.
+
+OU
+
+1 fichier par pattern : le fichier contient toutes les phases contenant au moins 4 patterns dont le pattern en question
+
+OU
+
+1 fichier par combinaison de 4 patterns possible contenant toutes les phases contenant ces 4 patterns
+Exemple : 
+- 1 fichier contenant les phases contenant les patterns 0, 1, 2 et 3
+- ...
+- 1 fichier contenant les phases contenant les patterns 5, 9, 12 et 21
+- ...
+- 1 fichier contenant les phases contenant les patterns 20, 21, 22 et 23
+
+-------
+
+-rw-r--r--   3 nsentout supergroup    1731282 2020-01-15 20:25 /user/nsentout/testq7/0p1-r-00000
+-rw-r--r--   3 nsentout supergroup        784 2020-01-15 20:25 /user/nsentout/testq7/0p10-r-00000
+-rw-r--r--   3 nsentout supergroup       4644 2020-01-15 20:25 /user/nsentout/testq7/0p2-r-00000
+-rw-r--r--   3 nsentout supergroup        146 2020-01-15 20:25 /user/nsentout/testq7/0p3-r-00000
+-rw-r--r--   3 nsentout supergroup     145732 2020-01-15 20:25 /user/nsentout/testq7/0p4-r-00000
+-rw-r--r--   3 nsentout supergroup         51 2020-01-15 20:25 /user/nsentout/testq7/0p5-r-00000
+-rw-r--r--   3 nsentout supergroup        293 2020-01-15 20:25 /user/nsentout/testq7/11p14-r-00000
+-rw-r--r--   3 nsentout supergroup        293 2020-01-15 20:25 /user/nsentout/testq7/11p15-r-00000
+-rw-r--r--   3 nsentout supergroup     136067 2020-01-15 20:25 /user/nsentout/testq7/1p2-r-00000
+-rw-r--r--   3 nsentout supergroup      52363 2020-01-15 20:25 /user/nsentout/testq7/1p3-r-00000
+-rw-r--r--   3 nsentout supergroup      76648 2020-01-15 20:25 /user/nsentout/testq7/1p4-r-00000
+-rw-r--r--   3 nsentout supergroup       2598 2020-01-15 20:25 /user/nsentout/testq7/1p5-r-00000
+-rw-r--r--   3 nsentout supergroup        110 2020-01-15 20:25 /user/nsentout/testq7/1p8-r-00000
+-rw-r--r--   3 nsentout supergroup       4371 2020-01-15 20:25 /user/nsentout/testq7/1p9-r-00000
+-rw-r--r--   3 nsentout supergroup        157 2020-01-15 20:25 /user/nsentout/testq7/2p13-r-00000
+-rw-r--r--   3 nsentout supergroup        672 2020-01-15 20:25 /user/nsentout/testq7/2p3-r-00000
+-rw-r--r--   3 nsentout supergroup     105658 2020-01-15 20:25 /user/nsentout/testq7/2p4-r-00000
+-rw-r--r--   3 nsentout supergroup         53 2020-01-15 20:25 /user/nsentout/testq7/2p8-r-00000
+-rw-r--r--   3 nsentout supergroup        324 2020-01-15 20:25 /user/nsentout/testq7/3p11-r-00000
+-rw-r--r--   3 nsentout supergroup        565 2020-01-15 20:25 /user/nsentout/testq7/3p15-r-00000
+-rw-r--r--   3 nsentout supergroup       2809 2020-01-15 20:25 /user/nsentout/testq7/3p4-r-00000
+-rw-r--r--   3 nsentout supergroup        397 2020-01-15 20:25 /user/nsentout/testq7/3p9-r-00000
+-rw-r--r--   3 nsentout supergroup        112 2020-01-15 20:25 /user/nsentout/testq7/4p8-r-00000
+-rw-r--r--   3 nsentout supergroup      39847 2020-01-15 20:25 /user/nsentout/testq7/4p9-r-00000
+-rw-r--r--   3 nsentout supergroup       8831 2020-01-15 20:25 /user/nsentout/testq7/8p11-r-00000
+-rw-r--r--   3 nsentout supergroup       6748 2020-01-15 20:25 /user/nsentout/testq7/8p12-r-00000
+-rw-r--r--   3 nsentout supergroup          0 2020-01-15 20:25 /user/nsentout/testq7/_SUCCESS
+-rw-r--r--   3 nsentout supergroup          0 2020-01-15 20:25 /user/nsentout/testq7/part-r-00000
+
+
+
+-------
+
 part-m-0020*
 
 count : 19670006

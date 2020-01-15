@@ -13,7 +13,6 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.util.StatCounter;
-import org.codehaus.jackson.map.util.Comparators;
 
 import scala.Tuple2;
 
@@ -21,6 +20,7 @@ public class Questions
 {
 	private static Integer NUMBER_PATTERNS = 22;
 	
+	private static String phasesSortedInputPath = "/user/nsentout/testq7/";
 	private static String patternsInputPath = "/raw_data/ALCF_repo/patterns.csv";
 	
 	/**********************************************************************************************/
@@ -180,38 +180,41 @@ public class Questions
 	
 	/**********************************************************************************************/
 	
-	public static void question7(JavaRDD<PhaseWritable> phasesRdd, ArrayList<String> output)
+	//public static void question7(JavaRDD<PhaseWritable> phasesRdd, ArrayList<String> output)
+	public static void question7(String patternsInput, JavaSparkContext context)
 	{
-		String patternsInput[] = {"2","8","0","5"};
-
-		output.add("count : " + phasesRdd.count());
+		patternsInput = patternsInput.replace(',', 'p');
+		String[] patternsInputSplit = patternsInput.split("p");
 		
-		// Key : pattern, Value : plage
-		/*
-		JavaPairRDD<String, String> test = phasesRdd
-				.filter(phase -> phase.onePatternIsPresent(patternsInput))
-				.flatMapToPair(phase -> {
-			HashSet<Tuple2<String, String>> patternPlages = new HashSet<Tuple2<String, String>>();
-			
-			if (phase.onePatternIsPresent(phase.getPatterns().split(","))) {
-				String patterns = phase.getPatterns();
-				List<Long> plages = phase.getPlagesHoraires();
-				
-				for (String pattern : patterns.split(",")) {
-					patternPlages.add(new Tuple2<String, String>(pattern, phase.getPlagesHorairesString()));
-				}
+		Arrays.sort(patternsInputSplit, new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				return Integer.compare(Integer.valueOf(o1), Integer.valueOf(o2));
 			}
-			
-			return patternPlages.iterator();
 		});
 		
-		test = test.reduceByKey((a,b) -> a + "," + b);
-		
-		for (Tuple2<String, String> t : test.distinct().collect()) {
-			output.add(t._1 + " : " + t._2);
+		String outputFileName = "";
+		for (int i = 0; i < patternsInputSplit.length; i++) {
+			outputFileName += patternsInputSplit[i];
+			if (i < patternsInputSplit.length - 1) {
+				outputFileName += "p";
+			}
 		}
-		*/
 		
+		outputFileName += "-r-00000";
+		
+		JavaRDD<String> phasesContainingInputPatterns = context.textFile(phasesSortedInputPath + outputFileName);
+		phasesContainingInputPatterns.saveAsTextFile("hdfs://froment:9000/user/nsentout/output-project");
+		
+		/*
+		String patternsInput[] = {"2","8","0","5"};
+		
+		output.add("count : " + phasesRdd.count());
+		
+		JavaRDD<PhaseWritable> phasesFilteredRdd = phasesRdd.filter(phase -> !phase.isIdle() && phase.getPatterns().split(",").length >= 4);
+		
+		output.add("count filtered: " + phasesFilteredRdd.count());
+
 		JavaPairRDD<Long, HashSet<String> > test = phasesRdd
 				.filter(phase -> phase.onePatternIsPresent(patternsInput))
 				.flatMapToPair(phase -> {
@@ -240,11 +243,7 @@ public class Questions
 		});
 		
 		output.add("test counter reduce: " + test.count());
-		/*
-		test.foreach(t -> {
-			System.out.println(t._1 + " : " + t._2);
-		});
-		*/
+
 		output.add("contenu rdd : ");
 		for (Tuple2<Long, HashSet<String>> t : test.collect()) {
 			output.add(t._1 + " :\t" + t._2);
@@ -273,21 +272,7 @@ public class Questions
 		for (Integer plage : plagesContainingInputPatterns) {
 			output.add(String.valueOf(plage));
 		}
-		
-		/*
-		JavaPairRDD<Long, String> pair = patternPhases.mapToPair(phase -> {
-			Long plagesHoraire = phase.getPlagesHoraires().get(0);
-			String patterns = phase.getPatterns();
-
-			return new Tuple2<Long, String>(plagesHoraire, patterns);
-		});
-		
-		pair = pair.reduceByKey((a,b) -> (a +","+b));
-		
-		output.add("count reduce : " + pair.count());
-		
-		pair.foreach(f -> System.out.println(f._1 + " : " + f._2 + "\n"));
-		 */
+		*/
 
 	}
 	

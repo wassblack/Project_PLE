@@ -11,6 +11,8 @@ public class MainPLEProject
 {
 	private static String phasesInputPath = "/user/nsentout/PhaseSequenceFiles/part-m-0020*";
 	//private static String phasesInputPath = "/user/nsentout/PhaseSequenceFiles/*";
+	
+	private static String outputPath = "hdfs://froment:9000/user/nsentout/output-project";
 
 	public static void main(String[] args)
 	{	
@@ -49,7 +51,16 @@ public class MainPLEProject
 					Questions.question6(phasesRdd, output, context);
 					break;
 				case "q7":
-					Questions.question7(phasesRdd, output);
+					if (args.length > 1) {
+						String patternsInput = args[1];
+						Questions.question7(patternsInput, context);
+					}
+					else {
+						System.err.println("ERREUR: IL MANQUE UN ARGUMENT");
+						System.err.println("Vous devez préviser les 4 patterns que les phases doivent comporter en séparant chaque pattern par une virgule"
+								+ ". Exemple : 0,5,14,21");
+					}
+					
 					break;
 				default:
 					System.err.println("ERREUR: ARGUMENT INCONNU");
@@ -57,7 +68,9 @@ public class MainPLEProject
 					System.exit(-1);
 			}
 			
-			context.parallelize(output).repartition(1).saveAsTextFile("hdfs://froment:9000/user/nsentout/output-project");
+			if (!output.isEmpty()) {
+				context.parallelize(output).repartition(1).saveAsTextFile("hdfs://froment:9000/user/nsentout/output-project");
+			}
 		}
 		else {
 			System.err.println("ERREUR: PAS D'ARGUMENT");
