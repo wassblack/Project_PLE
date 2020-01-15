@@ -9,7 +9,7 @@ import org.apache.spark.storage.StorageLevel;
 
 public class MainPLEProject
 {
-	private static String phasesInputPath = "/user/nsentout/PhaseSequenceFiles/part-m-00200";
+	private static String phasesInputPath = "/user/nsentout/PhaseSequenceFiles/part-m-0020*";
 	//private static String phasesInputPath = "/user/nsentout/PhaseSequenceFiles/*";
 
 	public static void main(String[] args)

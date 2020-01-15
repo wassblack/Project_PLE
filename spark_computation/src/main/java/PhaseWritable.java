@@ -4,6 +4,10 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -31,24 +35,24 @@ public class PhaseWritable implements Writable, Serializable
     {
     	ArrayList<Long> plagesHoraires = new ArrayList<Long>();
     	
-    	Date startDate = new Date(start);
-    	Date endDate = new Date(this.getEnd());
+    	Instant startIns = Instant.ofEpochMilli(start);
+    	Instant endIns = Instant.ofEpochMilli(this.getEnd());
+    
+    	int startPlage = (int) startIns.atZone(ZoneOffset.UTC).getHour();
+    	int endPlage = (int) endIns.atZone(ZoneOffset.UTC).getHour();
     	
-    	int startPlage = startDate.getHours();
-    	int endPlage = endDate.getHours();
+    	Duration duration = Duration.between(startIns, endIns);
     	
-    	int startDay = startDate.getDay();
-    	int endDay = endDate.getDate();
-    	
-    	// si la phase dure plus de 24 heures
-    	if (endDay - startDay > 1) {
+    	// si la phase dure 24 heures ou plus
+    	if (duration.toHours() >= 24) {
+    		//System.out.println("plus de 24 heures");
     		for (long i = 0; i < 24; i++) {
-	    		plagesHoraires.add(i);
+    			plagesHoraires.add(i);
 	    	}
     	}
     	
     	else {
-	    	// si la phase se passe entre 0h et 23h59
+	    	// si la phase se passe entre la plage horaire 0 et 23
 	    	if (startPlage <= endPlage) {
 		    	for (long i = startPlage; i <= endPlage; i++) {
 		    		plagesHoraires.add(i);
@@ -57,8 +61,6 @@ public class PhaseWritable implements Writable, Serializable
 	    	
 	    	// si la phase s'étale sur 2 jours
 	    	else {
-	    		System.out.println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA  "  + startPlage + ", " + endPlage);
-	    		
 	    		for (long i = startPlage; i < 24; i++) {
 	    			plagesHoraires.add(i);
 	    		}
@@ -68,12 +70,51 @@ public class PhaseWritable implements Writable, Serializable
 	    	}
     	}
     	
-    	if (plagesHoraires.isEmpty()) {
-    		System.out.println("start: " + startPlage);
-    		System.out.println("end: " + endPlage);
+    	return plagesHoraires;
+    }
+    
+    public String getPlagesHorairesString()
+    {
+    	String plagesHoraires = "";
+    	
+    	Instant startIns = Instant.ofEpochMilli(start);
+    	Instant endIns = Instant.ofEpochMilli(this.getEnd());
+    
+    	int startPlage = (int) startIns.atZone(ZoneOffset.UTC).getHour();
+    	int endPlage = (int) endIns.atZone(ZoneOffset.UTC).getHour();
+    	
+    	Duration duration = Duration.between(startIns, endIns);
+  
+    	// si la phase dure 24 heures ou plus
+    	if (duration.toHours() >= 24) {
+    		//System.out.println("plus de 24 heures");
+    		for (long i = 0; i < 24; i++) {
+    			plagesHoraires += i + ",";
+	    	}
     	}
     	
-    	return plagesHoraires;
+    	else {
+	    	// si la phase se passe entre la plage horaire 0 et 23
+	    	if (startPlage <= endPlage) {
+	    		//System.out.println("entre 0 et 23");
+		    	for (int i = startPlage; i <= endPlage; i++) {
+		    		plagesHoraires += i + ",";
+		    	}
+	    	}
+	    	
+	    	// si la phase s'étale sur 2 jours
+	    	else {
+	    		//System.out.println("plus de 2 jours");
+	    		for (int i = startPlage; i < 24; i++) {
+	    			plagesHoraires += i + ",";
+	    		}
+	    		for (int i = 0; i <= endPlage; i++) {
+	    			plagesHoraires += i + ",";
+	    		}
+	    	}
+    	}
+    	
+    	return plagesHoraires.substring(0, plagesHoraires.length() - 1);
     }
     
     public boolean onePatternIsPresent(String[] patterns) {

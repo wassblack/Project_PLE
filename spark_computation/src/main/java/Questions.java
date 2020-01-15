@@ -1,8 +1,11 @@
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.apache.spark.api.java.JavaDoubleRDD;
@@ -10,6 +13,7 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.util.StatCounter;
+import org.codehaus.jackson.map.util.Comparators;
 
 import scala.Tuple2;
 
@@ -79,28 +83,31 @@ public class Questions
 	
 	public static void question4(JavaRDD<PhaseWritable> phasesRdd, ArrayList<String> output)
 	{
-		// a
-		JavaPairRDD<String, Long> allJobsAndDurations = phasesRdd.flatMapToPair(f-> 
-		{
-			String[] jobs = f.getJobs().split(",");
-			List<Tuple2<String, Long>> jobsWithDuration = new ArrayList<>();
-			for (String j : jobs) {
-				if (!j.equals("-1")) {
-					jobsWithDuration.add(new Tuple2<String, Long>(j, f.getDuration()));							
+		/* a */
+		// Key : job id, Value : duration
+		JavaPairRDD<String, Long> jobDurationPair = phasesRdd
+			.flatMapToPair(phase->  {
+				List<Tuple2<String, Long>> jobsDurationTuple = new ArrayList<Tuple2<String, Long>>();
+				if (!phase.isIdle()) {
+					for (String job : phase.getJobs().split(",")) {
+						jobsDurationTuple.add(new Tuple2<String, Long>(job, phase.getDuration()));							
+					}
 				}
-			}
-			return jobsWithDuration.iterator();
-		}).reduceByKey((a,b) -> a+b);
+				
+				return jobsDurationTuple.iterator();
+			})
+			.reduceByKey((a,b) -> a+b);
 		
-		Questions.computeStats(allJobsAndDurations.values(), output).fillOutput(output);
+		output.add("===== DISTRIB TOTAL ACCESS TIME PER JOB =====");
+		Questions.computeStats(jobDurationPair.values(), output).fillOutput(output);
 	
-		// b
-		List<Tuple2<String, Long>> topTen = allJobsAndDurations.top(10, 
-				new ComparatorTuple2Serializable());
+		/* b */
+		List<Tuple2<String, Long>> topTen = jobDurationPair.top(10, new ComparatorTuple2Serializable());
 		
+		output.add("===== TOP TEN JOBS IN TOTAL ACCESS TIME =====");
 		int cpt = 1;
 		for (Tuple2<String, Long> value : topTen) {
-			output.add(cpt + " : " + value._2 + "(" + value._1 + ")");
+			output.add(cpt + " : " + value._1 + " (" + value._2 + ")");
 			cpt++;
 		}
 	}
@@ -119,6 +126,7 @@ public class Questions
 	
 	public static void question6(JavaRDD<PhaseWritable> phasesRdd, ArrayList<String> output, JavaSparkContext context)
 	{
+		/* a */
 		// Key : duration, Value : pattern id
 		TreeMap<Double, Long> allDurations = new TreeMap<Double, Long>(Collections.reverseOrder());
 		double totalDuration = 0.0;
@@ -158,7 +166,7 @@ public class Questions
 			output.add(String.valueOf(percentage));
 		}
 
-		// Top ten patterns
+		/* b */
 		output.add("TOP TEN PATTERNS");
 		int cpt = 0;
 		for (Map.Entry<Double, Long> value : allDurations.entrySet()) {
@@ -174,38 +182,112 @@ public class Questions
 	
 	public static void question7(JavaRDD<PhaseWritable> phasesRdd, ArrayList<String> output)
 	{
-		String patterns [] = {"15","11","8","21"};
+		String patternsInput[] = {"2","8","0","5"};
 
 		output.add("count : " + phasesRdd.count());
-
-		HashMap<Long, String> plagePatterns = new HashMap<Long, String>();
-		for (long i = 0; i < 23; i++) {
-			plagePatterns.put(i, "");
-		}
-
-		JavaRDD<PhaseWritable> patternPhases = phasesRdd.filter(phase-> phase.onePatternIsPresent(patterns));
-		output.add("count filter : " + patternPhases.count());
-
+		
+		// Key : pattern, Value : plage
 		/*
-		 patternPhases.foreach(phase -> {
-			 plagePatterns.put(0l, phase.getPatterns());
-		 });
+		JavaPairRDD<String, String> test = phasesRdd
+				.filter(phase -> phase.onePatternIsPresent(patternsInput))
+				.flatMapToPair(phase -> {
+			HashSet<Tuple2<String, String>> patternPlages = new HashSet<Tuple2<String, String>>();
+			
+			if (phase.onePatternIsPresent(phase.getPatterns().split(","))) {
+				String patterns = phase.getPatterns();
+				List<Long> plages = phase.getPlagesHoraires();
+				
+				for (String pattern : patterns.split(",")) {
+					patternPlages.add(new Tuple2<String, String>(pattern, phase.getPlagesHorairesString()));
+				}
+			}
+			
+			return patternPlages.iterator();
+		});
+		
+		test = test.reduceByKey((a,b) -> a + "," + b);
+		
+		for (Tuple2<String, String> t : test.distinct().collect()) {
+			output.add(t._1 + " : " + t._2);
+		}
+		*/
+		
+		JavaPairRDD<Long, HashSet<String> > test = phasesRdd
+				.filter(phase -> phase.onePatternIsPresent(patternsInput))
+				.flatMapToPair(phase -> {
+					HashSet<Tuple2<Long, HashSet<String>>> patternPlages = new HashSet<Tuple2<Long, HashSet<String>>>();
 
-	 	output.add(plagePatterns.get(0l));
-		 */
+					if (phase.onePatternIsPresent(patternsInput)) {
+						String patterns = phase.getPatterns();
+						List<Long> plages = phase.getPlagesHoraires();
+						
+						HashSet<String> value = new HashSet<>(Arrays.asList(patterns.split(",")));
+						
+						for (Long plage : plages) {
+							patternPlages.add(new Tuple2<Long, HashSet<String>>(plage, value));
+						}
+					}
 
-		JavaPairRDD<Long, String> pair = phasesRdd.mapToPair(phase -> {
-			Long a = phase.getPlagesHoraires().get(0);
-			String b = phase.getPatterns();
+					return patternPlages.iterator();
+				});
+		
+		output.add("test counter : " + test.count());
+		
+		
+		test = test.reduceByKey((a,b) -> {
+			a.addAll(b);
+			return a;
+		});
+		
+		output.add("test counter reduce: " + test.count());
+		/*
+		test.foreach(t -> {
+			System.out.println(t._1 + " : " + t._2);
+		});
+		*/
+		output.add("contenu rdd : ");
+		for (Tuple2<Long, HashSet<String>> t : test.collect()) {
+			output.add(t._1 + " :\t" + t._2);
+		}
+		
+		ArrayList<Integer> plagesContainingInputPatterns = new ArrayList<Integer> ();
+		int patternsCpt[] = new int[24];
+		
+		for (Tuple2<Long, HashSet<String>> pattern : test.collect()) {
+			for (String p : patternsInput) {
+				// si cette plage contient le pattern, on incrémente
+				if (pattern._2.contains(p)) {
+					int plage = Math.toIntExact(pattern._1);
+					patternsCpt[plage] ++;
+					
+					// si elle contient les 4, c'est bon
+					if (patternsCpt[plage] == 4) {
+						plagesContainingInputPatterns.add(plage);
+					}
+				}
+			}
+		}
+		
+		output.add("Les plages choisies contiennent ces 4 patterns : ");
+		plagesContainingInputPatterns.sort(Comparator.naturalOrder());
+		for (Integer plage : plagesContainingInputPatterns) {
+			output.add(String.valueOf(plage));
+		}
+		
+		/*
+		JavaPairRDD<Long, String> pair = patternPhases.mapToPair(phase -> {
+			Long plagesHoraire = phase.getPlagesHoraires().get(0);
+			String patterns = phase.getPatterns();
 
-			return new Tuple2<Long, String>(a, b);
+			return new Tuple2<Long, String>(plagesHoraire, patterns);
 		});
 		
 		pair = pair.reduceByKey((a,b) -> (a +","+b));
 		
-		output.add("count reduce : " + patternPhases.count());
+		output.add("count reduce : " + pair.count());
 		
-		pair.foreach(f -> System.out.println(f));
+		pair.foreach(f -> System.out.println(f._1 + " : " + f._2 + "\n"));
+		 */
 
 	}
 	
