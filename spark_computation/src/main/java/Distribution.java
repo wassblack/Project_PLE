@@ -45,7 +45,6 @@ public class Distribution
 
 			output.add(histogramString.toString());
 		}
-		
 	}
 
 	public double getMin() {

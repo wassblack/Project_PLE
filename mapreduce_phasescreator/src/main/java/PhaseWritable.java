@@ -22,18 +22,6 @@ public class PhaseWritable implements Writable, Serializable
 
     public PhaseWritable() { }
     
-    public boolean patternIsPresent(String pattern) {
-    	boolean isPresent = false;
-    	
-    	for (String p : patterns.split(",")) {
-    		if (p.equals(pattern)) {
-    			isPresent = true;
-    			break;
-    		}
-    	}
-    	return isPresent;
-    }
-    
     public Long getStart() {
     	return start;
     }

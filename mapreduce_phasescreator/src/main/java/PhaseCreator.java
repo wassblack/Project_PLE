@@ -18,11 +18,8 @@ public class PhaseCreator {
 		protected void map(Object key, Text value, Context context) throws IOException, InterruptedException
 		{
 			String[] phase = value.toString().split(";");
-			if(phase[0].equals("start")) {
-				return;
-			}
 			
-			if (phase.length == 9) {
+			if (!phase[0].equals("start")) {
 				try {
 					outValue.setStart(Long.parseLong(phase[0]));
 					outValue.setDuration(Long.parseLong(phase[2]));

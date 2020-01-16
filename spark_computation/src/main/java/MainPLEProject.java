@@ -59,6 +59,7 @@ public class MainPLEProject
 						System.err.println("ERREUR: IL MANQUE UN ARGUMENT");
 						System.err.println("Vous devez préviser les 4 patterns que les phases doivent comporter en séparant chaque pattern par une virgule"
 								+ ". Exemple : 0,5,14,21");
+						System.exit(-1);
 					}
 					
 					break;
@@ -69,7 +70,7 @@ public class MainPLEProject
 			}
 			
 			if (!output.isEmpty()) {
-				context.parallelize(output).repartition(1).saveAsTextFile("hdfs://froment:9000/user/nsentout/output-project");
+				context.parallelize(output).repartition(1).saveAsTextFile(outputPath);
 			}
 		}
 		else {

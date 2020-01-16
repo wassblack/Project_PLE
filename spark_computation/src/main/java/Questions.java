@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.TreeMap;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 import org.apache.spark.api.java.JavaDoubleRDD;
@@ -30,7 +28,7 @@ public class Questions
 		JavaRDD<Long> durationNonIdle = phasesRdd.filter(phase -> !phase.isIdle())
 				.map(phase -> phase.getDuration());	
 		output.add("===== DISTRIB DURATION NON IDLE =====");
-		Questions.computeStats(durationNonIdle, output).fillOutput(output);
+		Questions.computeStats(durationNonIdle).fillOutput(output);
 	}
 	
 	/**********************************************************************************************/
@@ -40,7 +38,7 @@ public class Questions
 		JavaRDD<Long> durationIdle = phasesRdd.filter(phase -> phase.isIdle())
 				.map(phase -> phase.getDuration());
 		output.add("===== DISTRIB DURATION IDLE =====");
-		Questions.computeStats(durationIdle, output).fillOutput(output);
+		Questions.computeStats(durationIdle).fillOutput(output);
 	}
 	
 	/**********************************************************************************************/
@@ -52,10 +50,12 @@ public class Questions
 			JavaRDD<Long> patternDurationAlone = phasesRdd.filter(phase -> phase.getPatterns().equals(patternId))
 					.map(phase -> phase.getDuration());
 			output.add("DISTRIB DURATION PATTERN " + patternId + " ALONE");
-			Distribution distrib = Questions.computeStats(patternDurationAlone, output);
+			Distribution distrib = Questions.computeStats(patternDurationAlone);
 			
 			if (distrib != null)
 				distrib.fillOutput(output);
+			else
+				output.add("The pattern " + patternId + " is never alone!");
 		}
 	}
 	
@@ -66,7 +66,7 @@ public class Questions
 		JavaRDD<Long> npatterns = phasesRdd.filter(phase -> !phase.isIdle())
 				.map(phase -> phase.getNpatterns());
 		output.add("===== DISTRIB NPATTERNS NON IDLE =====");
-		Questions.computeStats(npatterns, output).fillOutput(output);
+		Questions.computeStats(npatterns).fillOutput(output);
 	}
 	
 	/**********************************************************************************************/
@@ -76,7 +76,7 @@ public class Questions
 		JavaRDD<Long> njobs = phasesRdd.filter(phase -> !phase.isIdle())
 				.map(phase -> phase.getNjobs());
 		output.add("===== DISTRIB NJOBS NON IDLE =====");
-		Questions.computeStats(njobs, output).fillOutput(output);
+		Questions.computeStats(njobs).fillOutput(output);
 	}
 	
 	/**********************************************************************************************/
@@ -99,7 +99,7 @@ public class Questions
 			.reduceByKey((a,b) -> a+b);
 		
 		output.add("===== DISTRIB TOTAL ACCESS TIME PER JOB =====");
-		Questions.computeStats(jobDurationPair.values(), output).fillOutput(output);
+		Questions.computeStats(jobDurationPair.values()).fillOutput(output);
 	
 		/* b */
 		List<Tuple2<String, Long>> topTen = jobDurationPair.top(10, new ComparatorTuple2Serializable());
@@ -161,7 +161,7 @@ public class Questions
 		for (Map.Entry<Double, Long> value : allDurations.entrySet()) {
 			Long patternId = allDurations.get(value.getKey());
 			String patternName = patternsPair.filter(pattern -> pattern._1.equals(patternId)).first()._2;
-			output.add("PERCENTAGE PATTERN \"" + patternName + "\" ALONE OR WITH OTHERS PATTERNS");
+			output.add("PERCENTAGE PATTERN \"" + patternName + "\" (" + patternId + ") ALONE OR WITH OTHERS PATTERNS");
 			double percentage = value.getKey() / totalDuration * 100;
 			output.add(String.valueOf(percentage));
 		}
@@ -173,14 +173,13 @@ public class Questions
 			cpt++;
 			Long patternId = allDurations.get(value.getKey());
 			String patternName = patternsPair.filter(pattern -> pattern._1.equals(patternId)).first()._2;
-			output.add(cpt + " : " + patternName);
+			output.add(cpt + " : " + patternName + " (" + patternId + ")");
 			if (cpt == 10)	break;
 		}
 	}
 	
 	/**********************************************************************************************/
 	
-	//public static void question7(JavaRDD<PhaseWritable> phasesRdd, ArrayList<String> output)
 	public static void question7(String patternsInput, JavaSparkContext context)
 	{
 		patternsInput = patternsInput.replace(',', 'p');
@@ -193,6 +192,7 @@ public class Questions
 			}
 		});
 		
+		// Build the file name containing all timestamps needed
 		String outputFileName = "";
 		for (int i = 0; i < patternsInputSplit.length; i++) {
 			outputFileName += patternsInputSplit[i];
@@ -204,82 +204,13 @@ public class Questions
 		outputFileName += "-r-00000";
 		
 		JavaRDD<String> phasesContainingInputPatterns = context.textFile(phasesSortedInputPath + outputFileName);
-		phasesContainingInputPatterns.saveAsTextFile("hdfs://froment:9000/user/nsentout/output-project");
-		
-		/*
-		String patternsInput[] = {"2","8","0","5"};
-		
-		output.add("count : " + phasesRdd.count());
-		
-		JavaRDD<PhaseWritable> phasesFilteredRdd = phasesRdd.filter(phase -> !phase.isIdle() && phase.getPatterns().split(",").length >= 4);
-		
-		output.add("count filtered: " + phasesFilteredRdd.count());
-
-		JavaPairRDD<Long, HashSet<String> > test = phasesRdd
-				.filter(phase -> phase.onePatternIsPresent(patternsInput))
-				.flatMapToPair(phase -> {
-					HashSet<Tuple2<Long, HashSet<String>>> patternPlages = new HashSet<Tuple2<Long, HashSet<String>>>();
-
-					if (phase.onePatternIsPresent(patternsInput)) {
-						String patterns = phase.getPatterns();
-						List<Long> plages = phase.getPlagesHoraires();
-						
-						HashSet<String> value = new HashSet<>(Arrays.asList(patterns.split(",")));
-						
-						for (Long plage : plages) {
-							patternPlages.add(new Tuple2<Long, HashSet<String>>(plage, value));
-						}
-					}
-
-					return patternPlages.iterator();
-				});
-		
-		output.add("test counter : " + test.count());
-		
-		
-		test = test.reduceByKey((a,b) -> {
-			a.addAll(b);
-			return a;
-		});
-		
-		output.add("test counter reduce: " + test.count());
-
-		output.add("contenu rdd : ");
-		for (Tuple2<Long, HashSet<String>> t : test.collect()) {
-			output.add(t._1 + " :\t" + t._2);
-		}
-		
-		ArrayList<Integer> plagesContainingInputPatterns = new ArrayList<Integer> ();
-		int patternsCpt[] = new int[24];
-		
-		for (Tuple2<Long, HashSet<String>> pattern : test.collect()) {
-			for (String p : patternsInput) {
-				// si cette plage contient le pattern, on incrémente
-				if (pattern._2.contains(p)) {
-					int plage = Math.toIntExact(pattern._1);
-					patternsCpt[plage] ++;
-					
-					// si elle contient les 4, c'est bon
-					if (patternsCpt[plage] == 4) {
-						plagesContainingInputPatterns.add(plage);
-					}
-				}
-			}
-		}
-		
-		output.add("Les plages choisies contiennent ces 4 patterns : ");
-		plagesContainingInputPatterns.sort(Comparator.naturalOrder());
-		for (Integer plage : plagesContainingInputPatterns) {
-			output.add(String.valueOf(plage));
-		}
-		*/
-
+		phasesContainingInputPatterns.saveAsTextFile("hdfs://froment:9000/user/nsentout/output-project");	
 	}
 	
 	/**********************************************************************************************/
 	/**********************************************************************************************/
 	
-	private static Distribution computeStats(JavaRDD<Long> rdd, ArrayList<String> output)
+	private static Distribution computeStats(JavaRDD<Long> rdd)
 	{
 		JavaDoubleRDD rddDouble = rdd.mapToDouble(f -> f);
 		long count = rddDouble.count();
@@ -299,23 +230,21 @@ public class Questions
 			JavaPairRDD<Long, Long> rddPair = rdd.sortBy(f -> f, true, rdd.getNumPartitions())
 						.zipWithIndex().mapToPair(f -> new Tuple2<>(f._2, f._1));
 			
-			//JavaPairRDD<Long, Long> rddPair = rdd.zipWithIndex().mapToPair(f -> new Tuple2<>(f._2, f._1)).sortByKey();
-			
 			long median = 0;
 			long firstQuartile = 0;
 			long thirdQuartile = 0;
 			
 			if (count % 2 == 0) {
 				long middle_left = count / 2 - 1;
-				long middle_right = middle_left + 1;
+				long middle_right = count / 2;
 				median = (rddPair.lookup(middle_left).get(0) + rddPair.lookup(middle_right).get(0)) / 2;
 				
 				long first_quarter_left = count / 4 - 1;
-				long first_quarter_right = first_quarter_left + 1;
+				long first_quarter_right = count / 4;
 				firstQuartile = (rddPair.lookup(first_quarter_left).get(0) + rddPair.lookup(first_quarter_right).get(0)) / 2;
 				
 				long third_quarter_left = 3 * (count / 4) - 1;
-				long third_quarter_right = third_quarter_left + 1;
+				long third_quarter_right = 3 * (count / 4);
 				thirdQuartile = (rddPair.lookup(third_quarter_left).get(0) + rddPair.lookup(third_quarter_right).get(0)) / 2;
 			}
 			else {
@@ -330,10 +259,7 @@ public class Questions
 			
 			return distribution;
 		}
-		else {
-			output.add("The RDD was empty");
-		}
-		
+
 		return null;
 	}
 	

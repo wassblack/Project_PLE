@@ -45,18 +45,16 @@ public class PhaseCreator {
 			String[] phase = value.toString().split(";");
 			
 			if(!phase[0].equals("start")) {
-				if (phase.length == 9) {
-					String[] patterns = phase[3].split(",");
-					
-					if (patterns.length >= 4) {
-						List<String> combinations = getFourCombinations(patterns, PATTERN_DELIMITER_OUTPUT_FILE);
-						
-						for (String combination : combinations) {
-							outKey.set(combination);
-							context.write(outKey, value);
-						}
+				String[] patterns = phase[3].split(",");
+
+				if (patterns.length >= 4) {
+					List<String> combinations = getFourCombinations(patterns, PATTERN_DELIMITER_OUTPUT_FILE);
+
+					for (String combination : combinations) {
+						outKey.set(combination);
+						context.write(outKey, value);
 					}
-				}
+				}	
 			}
 		}
 	}

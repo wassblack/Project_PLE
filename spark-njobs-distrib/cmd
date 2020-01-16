@@ -1,1 +1,0 @@
-hdfs dfs -cat /raw_data/ALCF_repo/phases.csv | head -100 | hdfs dfs -put - /user/nsentout/cropped-phases.csv
