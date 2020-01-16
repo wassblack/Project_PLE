@@ -185,6 +185,7 @@ public class Questions
 		patternsInput = patternsInput.replace(',', 'p');
 		String[] patternsInputSplit = patternsInput.split("p");
 		
+		// Sort the patterns to easily retrieve the right file
 		Arrays.sort(patternsInputSplit, new Comparator<String>() {
 			@Override
 			public int compare(String o1, String o2) {

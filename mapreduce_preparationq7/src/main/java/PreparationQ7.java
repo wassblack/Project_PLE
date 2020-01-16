@@ -15,7 +15,7 @@ import org.apache.hadoop.mapreduce.lib.output.MultipleOutputs;
 
 public class PreparationQ7 {
 	
-	private static final int NUMBER_PATTERNS = 24;
+	private static final int NUMBER_PATTERNS = 22;
 	private static final char PATTERN_DELIMITER_OUTPUT_FILE = 'p';
 	
 	public static List<String> getFourCombinations(String[] patterns, char delimiter) {
@@ -94,7 +94,7 @@ public class PreparationQ7 {
 		conf.set("mapreduce.map.memory.mb", "512");
 		conf.set("mapreduce.reduce.memory.mb", "4096");
 		
-		Job job = Job.getInstance(conf, "PhaseCreator");
+		Job job = Job.getInstance(conf, "PreparationQ7");
 		//job.setNumReduceTasks(10);
 		job.setJarByClass(PreparationQ7.class);
 		
