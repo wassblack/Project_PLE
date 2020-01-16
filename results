@@ -490,16 +490,16 @@ PERCENTAGE PATTERN "posix read sequential shared file" ALONE OR WITH OTHERS PATT
 0.011725133400922827
 
 ===== Q6)b TOP TEN PATTERN =====
-1 : posix write sequential unique file
-2 : posix write consecutive unique file
-3 : posix read unique file
-4 : posix read shared file
-5 : mpi-io write shared file
-6 : posix write unique file
-7 : posix write consecutive shared file
-8 : posix read consecutive unique file
-9 : posix write shared file
-10 : mpi-io read collective shared file
+1 : posix write sequential unique file (3)
+2 : posix write consecutive unique file (1)
+3 : posix read unique file (0)
+4 : posix read shared file (2)
+5 : mpi-io write shared file (8)
+6 : posix write unique file (4)
+7 : posix write consecutive shared file (11)
+8 : posix read consecutive unique file (5)
+9 : posix write shared file (15)
+10 : mpi-io read collective shared file (13)
 
 ===== Q7)  =====
 

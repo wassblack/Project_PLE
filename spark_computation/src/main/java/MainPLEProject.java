@@ -53,7 +53,7 @@ public class MainPLEProject
 				case "q7":
 					if (args.length > 1) {
 						String patternsInput = args[1];
-						Questions.question7(patternsInput, context);
+						Questions.question7(patternsInput, context, outputPath);
 					}
 					else {
 						System.err.println("ERREUR: IL MANQUE UN ARGUMENT");

@@ -18,7 +18,7 @@ public class Questions
 {
 	private static Integer NUMBER_PATTERNS = 22;
 	
-	private static String phasesSortedInputPath = "/user/nsentout/testq7/";
+	private static String q7PrepInputPath = "/user/nsentout/q7prep/";
 	private static String patternsInputPath = "/raw_data/ALCF_repo/patterns.csv";
 	
 	/**********************************************************************************************/
@@ -180,7 +180,7 @@ public class Questions
 	
 	/**********************************************************************************************/
 	
-	public static void question7(String patternsInput, JavaSparkContext context)
+	public static void question7(String patternsInput, JavaSparkContext context, String outputPath)
 	{
 		patternsInput = patternsInput.replace(',', 'p');
 		String[] patternsInputSplit = patternsInput.split("p");
@@ -203,8 +203,8 @@ public class Questions
 		
 		outputFileName += "-r-00000";
 		
-		JavaRDD<String> phasesContainingInputPatterns = context.textFile(phasesSortedInputPath + outputFileName);
-		phasesContainingInputPatterns.saveAsTextFile("hdfs://froment:9000/user/nsentout/output-project");	
+		JavaRDD<String> phasesContainingInputPatterns = context.textFile(q7PrepInputPath + outputFileName);
+		phasesContainingInputPatterns.saveAsTextFile(outputPath);	
 	}
 	
 	/**********************************************************************************************/

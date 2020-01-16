@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>bigdata</groupId>
-  <artifactId>mapreduce-phasesorted</artifactId>
+  <artifactId>mapreduce-q7preparation</artifactId>
   <version>0.0.1</version>
-  <name>PLE Project - MapReduce PhaseSorted</name>
+  <name>PLE Project - MapReduce Preparation Question 7</name>
   <dependencies>
   	<dependency>
   		<groupId>org.apache.hadoop</groupId>
